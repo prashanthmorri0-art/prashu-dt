@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Campus Cafe</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#fff7ed;color:#292524}
+header{background:linear-gradient(135deg,#ea580c,#fbbf24);color:white;text-align:center;padding:25px 12px}
+header h1{margin:5px;font-size:30px}
+main{max-width:1000px;margin:auto;padding:15px}
+.card{background:white;padding:18px;border-radius:15px;margin:15px 0;box-shadow:0 4px 12px #0001}
+h2{color:#ea580c}
+input,select{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:8px;font-size:16px}
+button{border:0;border-radius:8px;background:#ea580c;color:white;padding:11px 14px;margin:4px;cursor:pointer}
+button:hover{background:#c2410c}
+nav{display:flex;flex-wrap:wrap;justify-content:center;background:#292524;padding:8px;border-radius:10px}
+nav button{background:#44403c}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.food{text-align:center;border:1px solid #fed7aa;border-radius:12px;padding:12px}
+.emoji{font-size:43px;margin:8px}
+.price{color:#ea580c;font-weight:bold}
+.info{background:#ffedd5;padding:12px;border-radius:10px;margin:12px 0}
+.hidden{display:none}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid #eee}
+footer{text-align:center;background:#292524;color:white;padding:20px;margin-top:25px}
+</style>
+</head>
+<body>
+<header>
+<h1>☕ AI Campus Cafe</h1>
+<p>Artificial Intelligence and Machine Learning</p>
+<p>Fresh Food • Smart Suggestions • Easy Ordering</p>
+</header>
+
+<main>
+<section class="card" id="login">
+<h2>🔐 Student Login</h2>
+<p>Welcome to our campus cafe!</p>
+<input id="studentName" value="M.prashanth" placeholder="Student Name">
+<input id="studentPRN" value="250105231511" placeholder="PRN Number">
+<button onclick="login()">Login to Cafe →</button>
+<p id="loginError" style="color:red"></p>
+</section>
+
+<div id="app" class="hidden">
+<div class="info">
+<h3>👋 Welcome, <span id="welcomeName"></span>!</h3>
+<p>PRN: <span id="welcomePRN"></span></p>
+<p>Enjoy your campus cafe experience.</p>
+</div>
+
+<nav>
+<button onclick="showPage('menu')">🍔 Menu</button>
+<button onclick="showPage('ai')">🤖 AI Suggestions</button>
+<button onclick="showPage('cart')">🛒 Cart (<span id="cartCount">0</span>)</button>
+<button onclick="showPage('orders')">📋 Orders</button>
+<button onclick="logout()">Logout</button>
+</nav>
+
+<section class="card" id="menu">
+<h2>🍽️ Campus Cafe Menu</h2>
+<input id="search" placeholder="🔎 Search food or drinks..." oninput="renderMenu()">
+<div class="grid" id="foodGrid"></div>
+</section>
+
+<section class="card hidden" id="ai">
+<h2>🤖 AI Food Recommendation</h2>
+<p>Select your preference to get food suggestions.</p>
+<select id="preference">
+<option value="snack">Snacks</option>
+<option value="meal">Meals</option>
+<option value="drink">Drinks</option>
+<option value="sweet">Sweets</option>
+<option value="budget">Budget-friendly food</option>
+</select>
+<button onclick="recommend()">✨ Recommend Food</button>
+<div id="recommendations" class="grid"></div>
+<p class="info">This demo uses simple rules to suggest food based on your preference.</p>
+</section>
+
+<section class="card hidden" id="cart">
+<h2>🛒 Your Cart</h2>
+<div id="cartItems">Your cart is empty.</div>
+<h3>Total Bill: ₹<span id="total">0</span></h3>
+<button onclick="placeOrder()">✅ Place Order</button>
+<button onclick="clearCart()" style="background:#57534e">Clear Cart</button>
+<p id="cartMessage"></p>
+</section>
+
+<section class="card hidden" id="orders">
+<h2>📋 Order History</h2>
+<div id="orderHistory">No orders yet.</div>
+</section>
+
+<section class="card">
+<h2>📘 Project Details</h2>
+<p><b>Subject:</b> Artificial Intelligence and Machine Learning</p>
+<p><b>Topic:</b> Campus Cafe</p>
+<p><b>Student:</b> M.prashanth</p>
+<p><b>PRN:</b> 250105231511</p>
+<p><b>Objective:</b> Browse food, order items, calculate bills and demonstrate smart recommendations.</p>
+</section>
+</div>
+</main>
+
+<footer>
+<h3>☕ AI Campus Cafe</h3>
+<p>Smart Campus Food Ordering System</p>
+</footer>
+
+<script>
+const products=[
+{id:1,name:"Veg Burger",price:60,emoji:"🍔",type:"snack"},
+{id:2,name:"Pizza",price:120,emoji:"🍕",type:"snack"},
+{id:3,name:"French Fries",price:50,emoji:"🍟",type:"snack"},
+{id:4,name:"Sandwich",price:55,emoji:"🥪",type:"snack"},
+{id:5,name:"Samosa",price:15,emoji:"🥟",type:"snack"},
+{id:6,name:"Veg Biryani",price:100,emoji:"🍛",type:"meal"},
+{id:7,name:"Fried Rice",price:90,emoji:"🍚",type:"meal"},
+{id:8,name:"Masala Dosa",price:50,emoji:"🥞",type:"meal"},
+{id:9,name:"Noodles",price:80,emoji:"🍜",type:"meal"},
+{id:10,name:"Veg Thali",price:110,emoji:"🍱",type:"meal"},
+{id:11,name:"Coffee",price:20,emoji:"☕",type:"drink"},
+{id:12,name:"Tea",price:15,emoji:"🍵",type:"drink"},
+{id:13,name:"Cold Coffee",price:50,emoji:"🥤",type:"drink"},
+{id:14,name:"Fresh Juice",price:40,emoji:"🧃",type:"drink"},
+{id:15,name:"Milkshake",price:60,emoji:"🥛",type:"drink"},
+{id:16,name:"Chocolate Cake",price:45,emoji:"🍰",type:"sweet"},
+{id:17,name:"Ice Cream",price:35,emoji:"🍨",type:"sweet"},
+{id:18,name:"Chocolate Brownie",price:50,emoji:"🍫",type:"sweet"}
+];
+
+let cart={};
+let orders=[];
+let currentStudent="";
+
+function login(){
+const name=document.getElementById("studentName").value.trim();
+const prn=document.getElementById("studentPRN").value.trim();
+if(!name||!prn){
+document.getElementById("loginError").textContent="Please enter your name and PRN.";
+return;
+}
+currentStudent=name;
+document.getElementById("welcomeName").textContent=name;
+document.getElementById("welcomePRN").textContent=prn;
+document.getElementById("login").classList.add("hidden");
+document.getElementById("app").classList.remove("hidden");
+renderMenu();
+}
+
+function logout(){
+document.getElementById("app").classList.add("hidden");
+document.getElementById("login").classList.remove("hidden");
+}
+
+function showPage(id){
+["menu","ai","cart","orders"].forEach(p=>
+document.getElementById(p).classList.toggle("hidden",p!==id));
+if(id==="cart")renderCart();
+if(id==="orders")renderOrders();
+}
+
+function renderMenu(){
+const search=document.getElementById("search").value.toLowerCase();
+const filtered=products.filter(p=>p.name.toLowerCase().includes(search));
+document.getElementById("foodGrid").innerHTML=filtered.map(p=>`
+<div class="food">
+<div class="emoji">${p.emoji}</div>
+<h3>${p.name}</h3>
+<p class="price">₹${p.price}</p>
+<button onclick="addToCart(${p.id})">Add to Cart +</button>
+</div>`).join("")||"<p>No items found.</p>";
+}
+
+function addToCart(id){
+cart[id]=(cart[id]||0)+1;
+updateCount();
+}
+
+function updateCount(){
+document.getElementById("cartCount").textContent=
+Object.values(cart).reduce((a,b)=>a+b,0);
+}
+
+function renderCart(){
+let total=0;
+let html="";
+for(const id in cart){
+const p=products.find(x=>x.id==id);
+const qty=cart[id];
+total+=p.price*qty;
+html+=`<div class="row">
+<span>${p.emoji} ${p.name}<br>₹${p.price} × ${qty}</span>
+<span>
+<button onclick="changeQty(${id},-1)">−</button>
+<button onclick="changeQty(${id},1)">+</button>
+</span></div>`;
+}
+document.getElementById("cartItems").innerHTML=html||"Your cart is empty.";
+document.getElementById("total").textContent=total;
+}
+
+function changeQty(id,n){
+cart[id]=(cart[id]||0)+n;
+if(cart[id]<=0)delete cart[id];
+updateCount();
+renderCart();
+}
+
+function clearCart(){
+cart={};
+updateCount();
+renderCart();
+document.getElementById("cartMessage").textContent="Cart cleared.";
+}
+
+function placeOrder(){
+const items=Object.keys(cart);
+if(!items.length){
+document.getElementById("cartMessage").textContent="Please add items first.";
+return;
+}
+let total=0;
+let details=[];
+items.forEach(id=>{
+const p=products.find(x=>x.id==id);
+total+=p.price*cart[id];
+details.push(p.name+" × "+cart[id]);
+});
+const order={
+number:orders.length+1,
+student:currentStudent,
+details:details.join(", "),
+total:total,
+time:new Date().toLocaleString()
+};
+orders.unshift(order);
+cart={};
+updateCount();
+renderCart();
+document.getElementById("cartMessage").textContent=
+"✅ Order placed successfully! Order #"+order.number;
+}
+
+function renderOrders(){
+document.getElementById("orderHistory").innerHTML=orders.length?
+orders.map(o=>`<div class="info">
+<h3>Order #${o.number} ✅</h3>
+<p>${o.details}</p>
+<p><b>Total: ₹${o.total}</b></p>
+<p>${o.time}</p>
+</div>`).join(""):"No orders yet.";
+}
+
+function recommend(){
+const choice=document.getElementById("preference").value;
+let result;
+if(choice==="budget"){
+result=products.filter(p=>p.price<=40);
+}else{
+result=products.filter(p=>p.type===choice);
+}
+document.getElementById("recommendations").innerHTML=result.map(p=>`
+<div class="food">
+<div class="emoji">${p.emoji}</div>
+<h3>${p.name}</h3>
+<p class="price">₹${p.price}</p>
+<button onclick="addToCart(${p.id})">Add to Cart +</button>
+</div>`).join("")||"No suggestions available.";
+}
+
+renderMenu();
+</script>
+</body>
+</html>
